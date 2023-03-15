@@ -7,7 +7,7 @@ const { constants } = require('../constants/constants');
 //generate token
 const generateAccessToken = (data) => {
     return jwt.sign(data, process.env.ACCESS_TOKEN_SECERT, {
-        expiresIn: '15s'
+        expiresIn: process.env.EXPRISES_TIME || '10m'
     });
 };
 const generateRefreshToken = (data) => {
