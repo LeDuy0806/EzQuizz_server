@@ -4,6 +4,9 @@
     "main": "src/server.js",
     "description": "This is express project for my app ezquiz backend api",
     "license": "MIT",
+    "engines": {
+        "node": ">=14 <15"
+    },
     "scripts": {
         "start": "nodemon src/server.js"
     },
