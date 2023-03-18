@@ -11,7 +11,7 @@ const {
 const {
     verifyAccessToken,
     verifyAdmin,
-    verifyMySelf
+    verifyUserAuthorization
 } = require('../middleware/auth.middleware');
 
 router.use(verifyAccessToken);
@@ -19,7 +19,7 @@ router.route('/').get(verifyAdmin, getUsers).post(verifyAdmin, createUser);
 router
     .route('/:id')
     .get(getUser)
-    .put(verifyMySelf, updateUser)
+    .put(verifyUserAuthorization, updateUser)
     .delete(verifyAdmin, deleteUser);
 
 module.exports = router;

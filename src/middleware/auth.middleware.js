@@ -1,6 +1,8 @@
 const asyncHandler = require('express-async-handler');
 const jwt = require('jsonwebtoken');
-const { constants } = require('../constants/constants');
+const { constants } = require('../constants/httpStatus');
+
+const { TokenExpiredError } = jwt;
 
 const verifyAccessToken = asyncHandler(async (req, res, next) => {
     let token;
@@ -15,7 +17,7 @@ const verifyAccessToken = asyncHandler(async (req, res, next) => {
 
         jwt.verify(token, process.env.ACCESS_TOKEN_SECERT, (err, decoded) => {
             if (err) {
-                if (err.name == 'TokenExpiredError') {
+                if (err instanceof TokenExpiredError) {
                     res.status(constants.UNAUTHORIZED);
                     throw new Error('Token expired');
                 }
@@ -36,6 +38,10 @@ const verifyAdmin = asyncHandler(async (req, res, next) => {
         token = authHeader.split(' ')[1];
         jwt.verify(token, process.env.ACCESS_TOKEN_SECERT, (err, decoded) => {
             if (err) {
+                if (error instanceof TokenExpiredError) {
+                    res.status(constants.UNAUTHORIZED);
+                    throw new Error('Token expired');
+                }
                 res.status(401);
                 throw new Error('User is not authorized');
             }
@@ -44,7 +50,6 @@ const verifyAdmin = asyncHandler(async (req, res, next) => {
             //check admin role
             if (user.userType === 'Admin') {
                 next();
-                req.user = user;
             } else {
                 res.status(403);
                 throw new Error('You do not have permission to do that.');
@@ -58,13 +63,17 @@ const verifyAdmin = asyncHandler(async (req, res, next) => {
     }
 });
 
-const verifyMySelf = asyncHandler(async (req, res, next) => {
+const verifyUserAuthorization = asyncHandler(async (req, res, next) => {
     let token;
     let authHeader = req.headers.Authorization || req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer')) {
         token = authHeader.split(' ')[1];
         jwt.verify(token, process.env.ACCESS_TOKEN_SECERT, (err, decoded) => {
             if (err) {
+                if (error instanceof TokenExpiredError) {
+                    res.status(constants.UNAUTHORIZED);
+                    throw new Error('Token expired');
+                }
                 res.status(401);
                 throw new Error('User is not authorized');
             }
@@ -87,4 +96,4 @@ const verifyMySelf = asyncHandler(async (req, res, next) => {
     }
 });
 
-module.exports = { verifyAccessToken, verifyAdmin, verifyMySelf };
+module.exports = { verifyAccessToken, verifyAdmin, verifyUserAuthorization };

@@ -2,18 +2,31 @@ const asyncHandler = require('express-async-handler');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
-const { constants } = require('../constants/constants');
+const RefreshTokenModel = require('../models/refreshToken.Model');
+const { constants } = require('../constants/httpStatus');
 
 //generate token
 const generateAccessToken = (data) => {
-    return jwt.sign(data, process.env.ACCESS_TOKEN_SECERT, {
-        expiresIn: process.env.EXPRISES_TIME || '10m'
-    });
+    try {
+        const token = jwt.sign(data, process.env.ACCESS_TOKEN_SECERT, {
+            expiresIn: process.env.EXPRISES_TIME || '10m'
+        });
+        return token;
+    } catch (error) {
+        console.log(`Error in generate token + ${error}`);
+        return null;
+    }
 };
 const generateRefreshToken = (data) => {
-    return jwt.sign(data, process.env.REFRESH_TOKEN_SECERT, {
-        expiresIn: '2d'
-    });
+    try {
+        const token = jwt.sign(data, process.env.REFRESH_TOKEN_SECERT, {
+            expiresIn: '2d'
+        });
+        return token;
+    } catch (error) {
+        console.log(`Error in generate token + ${error}`);
+        return null;
+    }
 };
 //@desc Login user
 //@route POST /api/auth/login
@@ -24,41 +37,52 @@ const loginUser = asyncHandler(async (req, res) => {
         res.status(constants.BAD_REQUEST);
         throw new Error('All fields are mandatory!');
     }
-    const user = await User.findOne({ userName });
-    //compare password with hashedpassword
-    if (user && (await bcrypt.compare(password + '', user.password))) {
-        const accessToken = generateAccessToken({
-            user: {
-                userName: user.userName,
-                userType: user.userType,
-                email: user.email,
-                id: user.id
-            }
-        });
-        const refreshToken = generateRefreshToken({
-            user: {
-                userName: user.userName,
-                userType: user.userType,
-                email: user.email,
-                id: user.id
-            }
-        });
+    try {
+        const user = await User.findOne({ userName });
+        //compare password with hashedpassword
+        if (user && (await bcrypt.compare(password + '', user.password))) {
+            //generate token
+            const accessToken = generateAccessToken({
+                user: {
+                    userName: user.userName,
+                    userType: user.userType,
+                    email: user.email,
+                    id: user.id
+                }
+            });
+            const refreshToken = generateRefreshToken({
+                user: {
+                    userName: user.userName,
+                    userType: user.userType,
+                    email: user.email,
+                    id: user.id
+                }
+            });
+            //store refresh token to DB
+            await new RefreshTokenModel({
+                user_id: user._id,
+                token: refreshToken
+            }).save();
 
-        res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: false,
-            path: '/',
-            sameSite: 'strict'
-        });
+            res.cookie('refreshToken', refreshToken, {
+                httpOnly: true,
+                secure: false,
+                path: '/',
+                sameSite: 'strict'
+            });
 
-        const { password, ...userWithoutPassword } = user._doc;
-        res.status(constants.OK).json({
-            message: 'Login successfully',
-            data: { user: userWithoutPassword, accessToken, refreshToken }
-        });
-    } else {
-        res.status(constants.UNAUTHORIZED);
-        throw new Error('userName or password is not valid');
+            const { password, ...userWithoutPassword } = user._doc;
+            res.status(constants.OK).json({
+                message: 'Login successfully',
+                data: { user: userWithoutPassword, accessToken, refreshToken }
+            });
+        } else {
+            res.status(constants.UNAUTHORIZED);
+            throw new Error('userName or password is not valid');
+        }
+    } catch (error) {
+        res.status(constants.SERVER_ERROR);
+        throw new Error(error);
     }
 });
 
@@ -67,18 +91,15 @@ const loginUser = asyncHandler(async (req, res) => {
 //@access public
 const registerUser = asyncHandler(async (req, res) => {
     // const { username, email, password } = req.body;
-    const { userType, firstName, lastName, userName, email, password } =
-        req.body;
-    if (
-        !userName ||
-        !email ||
-        !password ||
-        !userType ||
-        !firstName ||
-        !lastName
-    ) {
+    const { userType, fullName, userName, email, password } = req.body;
+    if (!userName || !email || !password || !userType || !fullName) {
         res.status(constants.BAD_REQUEST);
         throw new Error('All fields are mandatory!');
+    }
+
+    if (userType && userType == 'Admin') {
+        res.status(constants.FORBIDDEN);
+        throw new Error('You do not have permission to create Admin!');
     }
     const existingUserName = await User.findOne({ userName });
     const existingEmail = await User.findOne({ email });
@@ -101,7 +122,7 @@ const registerUser = asyncHandler(async (req, res) => {
             avatar: '',
             userName,
             userType,
-            fullName: lastName + ' ' + firstName,
+            fullName,
             email,
             password: hashedPassword
         });
@@ -124,6 +145,11 @@ const registerUser = asyncHandler(async (req, res) => {
                 }
             });
 
+            await new RefreshTokenModel({
+                user_id: user._id,
+                token: refreshToken
+            }).save();
+
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: false,
@@ -133,7 +159,8 @@ const registerUser = asyncHandler(async (req, res) => {
             res.status(constants.CREATE).json({
                 user,
                 message: 'Register the user',
-                accessToken
+                accessToken,
+                refreshToken
             });
         } else {
             res.status(constants.BAD_REQUEST);
@@ -149,40 +176,84 @@ const registerUser = asyncHandler(async (req, res) => {
 //@access public
 const requestRefreshToken = asyncHandler(async (req, res) => {
     //take refresh token from user
-    const refreshToken = req.cookies.refreshToken;
-    // const refreshToken = req.body.refreshToken;
+    // const refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.body.refreshToken;
     if (!refreshToken)
-        return res.status(401).json({ message: "You're not authenticated" });
-    jwt.verify(
-        refreshToken,
-        process.env.REFRESH_TOKEN_SECERT,
-        (err, decoded) => {
-            if (err) {
-                res.status(401);
-                throw new Error('User is not authorized');
-            }
-            //create new accesstoken, refeshtoken
-            const newAccessToken = generateAccessToken({ user: decoded.user });
-            const newRefreshToken = generateRefreshToken({
-                user: decoded.user
-            });
-            // store refesh token to coockie
-            res.cookie('refreshToken', newRefreshToken, {
-                httpOnly: true,
-                secure: false,
-                path: '/',
-                sameSite: 'strict'
-            });
-            res.status(200).json({ accessToken: newAccessToken });
+        return res
+            .status(constants.UNAUTHORIZED)
+            .json({ message: "You're not authenticated" });
+
+    try {
+        const refreshTokenFromDB = await RefreshTokenModel.findOne({
+            token: refreshToken
+        });
+
+        if (!refreshTokenFromDB) {
+            return res
+                .status(constants.NOT_FOUND)
+                .json({ message: 'Cannot find refresh token' });
         }
-    );
+
+        jwt.verify(
+            refreshToken,
+            process.env.REFRESH_TOKEN_SECERT,
+            (err, decoded) => {
+                if (err) {
+                    res.status(401);
+                    throw new Error(err);
+                }
+
+                // const user = await User.findOne({
+                //     userName: userDecoded.userName
+                // });
+                console.log(refreshTokenFromDB.user_id.toString(), decoded);
+                if (refreshTokenFromDB.user_id.toString() !== decoded.user.id) {
+                    res.status(constants.NOT_FOUND);
+                    throw new Error('User is not found');
+                }
+                //create new accesstoken, refeshtoken
+                const newAccessToken = generateAccessToken({
+                    user: decoded.user
+                });
+                // const newRefreshToken = generateRefreshToken({
+                //     user: decoded.user
+                // });
+                // // store refesh token to coockie
+                // res.cookie('refreshToken', newRefreshToken, {
+                //     httpOnly: true,
+                //     secure: false,
+                //     path: '/',
+                //     sameSite: 'strict'
+                // });
+                res.status(200).json({ accessToken: newAccessToken });
+            }
+        );
+    } catch (error) {
+        res.status(constants.SERVER_ERROR);
+        throw new Error(error);
+    }
 });
 //@desc Log out user
 //@route POST /api/auth/logout
 //@access public
 const userLogout = asyncHandler(async (req, res) => {
-    res.clearCookie('refreshToken');
-    res.status(200).json({ message: `Logged out user id ${req.user.id}` });
+    try {
+        const user_id = req.params.id;
+        const result = await RefreshTokenModel.findOneAndDelete({
+            user_id: user_id
+        });
+        if (!result) {
+            return res.status(constants.BAD_REQUEST).json({
+                message: `User with id ${user_id} has been logged out `
+            });
+        }
+        res.status(constants.OK).json({
+            message: `Logged out user id ${user_id}`
+        });
+    } catch (error) {
+        res.status(constants.SERVER_ERROR);
+        throw new Error(error);
+    }
 });
 //@desc Current user info
 //@route POST /api/auth/current

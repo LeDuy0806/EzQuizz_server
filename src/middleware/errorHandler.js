@@ -1,4 +1,4 @@
-const { constants } = require('../constants/constants');
+const { constants } = require('../constants/httpStatus');
 const errorHandler = (err, req, res, next) => {
     const statusCode = res.statusCode ? res.statusCode : 500;
     switch (statusCode) {

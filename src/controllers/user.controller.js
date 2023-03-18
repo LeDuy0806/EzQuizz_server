@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const asyncHandler = require('express-async-handler');
 const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
-const { constants } = require('../constants/constants');
+const { constants } = require('../constants/httpStatus');
 
 //@desc get all users
 //@route GET /api/users/

@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-    avatar: { type: String },
+    avatar: {
+        url: { type: String },
+        ref: { type: String }
+    },
     userType: {
         type: String,
         enum: ['Student', 'Teacher', 'Admin'],

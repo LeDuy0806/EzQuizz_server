@@ -17,7 +17,7 @@ router.post('/login', loginUser);
 //refresh token
 router.post('/refreshtoken', requestRefreshToken);
 //log out
-router.post('/logout', verifyAccessToken, userLogout);
+router.post('/logout/:id', userLogout);
 // get current user
 router.get('/current', verifyAccessToken, currentUser);
 
