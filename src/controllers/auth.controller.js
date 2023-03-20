@@ -99,7 +99,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     if (userType && userType == 'Admin') {
         res.status(constants.FORBIDDEN);
-        throw new Error('You do not have permission to create Admin!');
+        throw new Error('Admin is not a user type!');
     }
     const existingUserName = await User.findOne({ userName });
     const existingEmail = await User.findOne({ email });
@@ -206,7 +206,7 @@ const requestRefreshToken = asyncHandler(async (req, res) => {
                 // const user = await User.findOne({
                 //     userName: userDecoded.userName
                 // });
-                console.log(refreshTokenFromDB.user_id.toString(), decoded);
+                // console.log(refreshTokenFromDB.user_id.toString(), decoded);
                 if (refreshTokenFromDB.user_id.toString() !== decoded.user.id) {
                     res.status(constants.NOT_FOUND);
                     throw new Error('User is not found');

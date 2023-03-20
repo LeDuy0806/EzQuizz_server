@@ -24,15 +24,14 @@ const getUsers = asyncHandler(async (req, res) => {
 //@route POST /api/users/
 //@access private and admin role
 const createUser = asyncHandler(async (req, res) => {
-    const { userType, firstName, lastName, userName, email, password } =
-        req.body;
+    const { userType, userName, fullName, email, password } = req.body;
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     console.log(salt);
     console.log(hashedPassword);
     const user = new User({
         userType,
-        fullName: lastName + ' ' + firstName,
+        fullName,
         userName,
         email,
         password: hashedPassword
@@ -69,14 +68,13 @@ const getUser = asyncHandler(async (req, res) => {
 //@access private
 const updateUser = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    // if (!mongoose.Types.ObjectId.isValid(id)) {
-    //   return res.status(404).send(`No user with id: ${id}`);
-    // }
-    if (req.user.checkMySelf) {
-        return res.status(constants.OK).json({ message: 'myself' });
-    } else {
-        return res.status(constants.OK).json({ message: 'not myself' });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(404).send(`No user with id: ${id}`);
     }
+    // if (!req.user?.checkMySelf) {
+    //     return res.status(constants.OK).json({ message: 'not myself' });
+    // }
+    // return res.status(constants.OK).json({ message: 'myself' });
     let oldUser;
     try {
         oldUser = await User.findById(req.params.id);
@@ -89,14 +87,18 @@ const updateUser = asyncHandler(async (req, res) => {
         res.status(constants.SERVER_ERROR).json({ message: error.message });
     }
 
-    const { avatar, userType, firstName, lastName, userName, email, password } =
-        req.body;
+    const { avatar, userType, fullName, userName, email, password } = req.body;
+
+    if (userType && userType == 'Admin' && req.user.userType !== 'Admin') {
+        res.status(constants.FORBIDDEN);
+        throw new Error('Admin is not a user type!');
+    }
+
     const user = new User({
         _id: id,
         avatar,
         userType: userType || oldUser.userType,
-        firstName,
-        lastName,
+        fullName,
         userName,
         email: email || oldUser.email,
         password: password || oldUser.password
