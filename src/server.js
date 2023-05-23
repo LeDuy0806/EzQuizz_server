@@ -1,6 +1,7 @@
 const express = require('express');
 const connectDb = require('./config/dbConnection');
 const errorHandler = require('./middleware/errorHandler');
+const cors = require('cors');
 
 var cookieParser = require('cookie-parser');
 // const dotenv = require('dotenv').config();
@@ -8,6 +9,7 @@ require('dotenv').config();
 
 connectDb();
 const app = express();
+app.use(cors());
 app.use(cookieParser());
 const port = process.env.PORT || 5000;
 

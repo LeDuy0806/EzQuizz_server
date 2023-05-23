@@ -10,7 +10,12 @@ const {
     getTeacherQuizes,
     deleteQuiz,
     likeQuiz,
-    commentQuiz
+    commentQuiz,
+    addQuestion,
+    getQuestions,
+    getQuestion,
+    updateQuestion,
+    deleteQuestion
 } = require('../controllers/quiz.controller');
 
 const {
@@ -39,7 +44,15 @@ router.get('/search', getQuizesBySearch);
 
 router.get('/teacher/:teacherId', getTeacherQuizes);
 
-router.patch('/:id/likeQuiz', likeQuiz);
+router.put('/:id/likeQuiz', likeQuiz);
 router.post('/:id/commentQuiz', commentQuiz);
+
+router.route('/:quizId/questions').post(addQuestion).get(getQuestions);
+
+router
+    .route('/:quizId/questions/:questionId')
+    .get(getQuestion)
+    .put(updateQuestion)
+    .delete(deleteQuestion);
 
 module.exports = router;

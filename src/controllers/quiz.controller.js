@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { constants } = require('../constants/httpStatus');
 const asyncHandler = require('express-async-handler');
 const Quiz = require('../models/quiz.Model');
+const Question = require('../models/question.Model');
 
 const createQuiz = asyncHandler(async (req, res) => {
     const {
@@ -15,6 +16,50 @@ const createQuiz = asyncHandler(async (req, res) => {
         likesCount,
         questionList
     } = req.body;
+
+    const createdQuestions = [];
+
+    for (let i = 0; i < questionList.length; i++) {
+        let createdQuestion;
+
+        if (questionList[i]._id) {
+            createdQuestions.push(questionList[i]);
+        } else {
+            const newQuestion = new Question({
+                creatorId: req.user.id,
+                tags,
+                isPublic,
+                questionType: questionList[i].questionType,
+                pointType: questionList[i].pointType,
+                answerTime: questionList[i].answerTime,
+                backgroundImage: questionList[i].backgroundImage,
+                question: questionList[i].question,
+                answerList: questionList[i].answerList
+            });
+            createdQuestion = await newQuestion.save();
+
+            const {
+                _id,
+                questionType,
+                pointType,
+                answerTime,
+                backgroundImage,
+                question,
+                answerList
+            } = createdQuestion._doc;
+            createdQuestions.push({
+                _id,
+                questionType,
+                pointType,
+                answerTime,
+                backgroundImage,
+                question,
+                answerList,
+                questionIndex: i
+            });
+        }
+    }
+
     const quiz = new Quiz({
         name,
         backgroundImage,
@@ -22,17 +67,106 @@ const createQuiz = asyncHandler(async (req, res) => {
         creatorId: req.user.id,
         creatorName,
         pointsPerQuestion,
-        numberOfQuestions: questionList.length,
+        numberOfQuestions: createdQuestions.length,
         isPublic,
         tags,
         likesCount,
+        questionList: createdQuestions,
+        dateCreated: new Date().toISOString()
+    });
+
+    try {
+        // const newQuiz = await quiz.save();
+        res.status(201).json({ quiz, createdQuestions });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+const updateQuiz = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(404).send(`No quiz with id: ${id}`);
+    }
+
+    const {
+        name,
+        backgroundImage,
+        description,
+        pointsPerQuestion,
+        isPublic,
+        tags,
+        questionList
+    } = req.body;
+
+    const createdQuestions = [];
+
+    for (let i = 0; i < questionList.length; i++) {
+        let createdQuestion;
+
+        if (questionList[i]._id) {
+            try {
+                const question = await Question.findById(questionList[i]._id);
+                if (question) {
+                    createdQuestion = question;
+                }
+            } catch (error) {
+                res.status(constants.SERVER_ERROR);
+                throw new Error(error);
+            }
+        } else {
+            const newQuestion = new Question({
+                creatorId: req.user.id,
+                tags,
+                isPublic,
+                questionType: questionList[i].questionType,
+                pointType: questionList[i].pointType,
+                answerTime: questionList[i].answerTime,
+                backgroundImage: questionList[i].backgroundImage,
+                question: questionList[i].question,
+                answerList: questionList[i].answerList
+            });
+            createdQuestion = await newQuestion.save();
+        }
+        const {
+            _id,
+            questionType,
+            pointType,
+            answerTime,
+            backgroundImage,
+            question,
+            answerList
+        } = createdQuestion._doc;
+        createdQuestions.push({
+            _id,
+            questionType,
+            pointType,
+            answerTime,
+            backgroundImage,
+            question,
+            answerList,
+            questionIndex: i
+        });
+    }
+
+    const quiz = new Quiz({
+        _id: id,
+        name,
+        backgroundImage,
+        description,
+        pointsPerQuestion,
+        numberOfQuestions: questionList.length,
+        isPublic,
+        tags,
         questionList,
         dateCreated: new Date().toISOString()
     });
 
     try {
-        const newQuiz = await quiz.save();
-        res.status(201).json(newQuiz);
+        const updatedQuiz = await Quiz.findByIdAndUpdate(id, quiz, {
+            new: true
+        });
+        res.json(updatedQuiz);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -105,44 +239,6 @@ const deleteQuiz = asyncHandler(async (req, res) => {
         res.json({ message: 'Quiz deleted succesfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
-    }
-});
-
-const updateQuiz = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).send(`No quiz with id: ${id}`);
-    }
-
-    const {
-        name,
-        backgroundImage,
-        description,
-        pointsPerQuestion,
-        isPublic,
-        tags,
-        questionList
-    } = req.body;
-    const quiz = new Quiz({
-        _id: id,
-        name,
-        backgroundImage,
-        description,
-        pointsPerQuestion,
-        numberOfQuestions: questionList.length,
-        isPublic,
-        tags,
-        questionList,
-        dateCreated: new Date().toISOString()
-    });
-
-    try {
-        const updatedQuiz = await Quiz.findByIdAndUpdate(id, quiz, {
-            new: true
-        });
-        res.json(updatedQuiz);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
     }
 });
 
