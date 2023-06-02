@@ -31,6 +31,10 @@ const quizSchema = new mongoose.Schema(
                     //timeline, group, order
                     required: true
                 },
+                optionQuestion: {
+                    type: String,
+                    required: true
+                },
                 pointType: {
                     type: String,
                     enum: ['Standard', 'Double', 'BasedOnTime'],
@@ -46,8 +50,8 @@ const quizSchema = new mongoose.Schema(
                     ref: { type: String }
                 },
                 question: {
-                    type: String,
-                    required: true
+                    type: String
+                    // required: true
                 },
                 answerList: [
                     {

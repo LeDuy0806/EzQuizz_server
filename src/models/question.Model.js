@@ -3,11 +3,15 @@ const mongoose = require('mongoose');
 const questionSchema = new mongoose.Schema(
     {
         creatorId: { type: mongoose.SchemaTypes.ObjectId, ref: 'users' },
-        // quizId: { type: mongoose.SchemaTypes.ObjectId, ref: 'quizzes' },
+        quizId: { type: mongoose.SchemaTypes.ObjectId, ref: 'quizzes' },
         tags: [String],
         questionType: {
             type: String,
             enum: ['True/False', 'Quiz'],
+            required: true
+        },
+        optionQuestion: {
+            type: String,
             required: true
         },
         isPublic: {
@@ -29,8 +33,8 @@ const questionSchema = new mongoose.Schema(
             ref: { type: String }
         },
         question: {
-            type: String,
-            required: true
+            type: String
+            // required: true
         },
         answerList: [
             {
@@ -38,7 +42,8 @@ const questionSchema = new mongoose.Schema(
                 body: { type: String },
                 isCorrect: { type: Boolean }
             }
-        ]
+        ],
+        questionIndex: { type: Number, required: true }
     },
     {
         timestamps: true

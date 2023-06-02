@@ -15,6 +15,7 @@ const {
 } = require('../middleware/auth.middleware');
 
 router.use(verifyAccessToken);
+router.route('/findfriend').get(getUsers);
 router.route('/').get(verifyAdmin, getUsers).post(verifyAdmin, createUser);
 router
     .route('/:id')

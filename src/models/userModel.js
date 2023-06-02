@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
         maxlength: 15,
         unique: true
     },
-    email: {
+    mail: {
         type: String,
         required: true,
         unique: true
@@ -29,6 +29,15 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
+    },
+    point: {
+        type: Number
+    },
+    emailToken: {
+        type: String
+    },
+    isVerified: {
+        type: Boolean
     }
 });
 
