@@ -6,7 +6,9 @@ const {
     getUsers,
     getUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    unFollow,
+    followUser
 } = require('../controllers/user.controller');
 const {
     verifyAccessToken,
@@ -15,12 +17,18 @@ const {
 } = require('../middleware/auth.middleware');
 
 router.use(verifyAccessToken);
-router.route('/findfriend').get(getUsers);
+// router.route('/findfriend').get(getUsers);
+router.route('/').get(getUsers);
+
 router.route('/').get(verifyAdmin, getUsers).post(verifyAdmin, createUser);
+
+router.route('/:myId/unfollow/:friendId').put(unFollow);
+router.route('/:myId/follow/:friendId').put(followUser);
+
 router
     .route('/:id')
     .get(getUser)
-    .put(verifyUserAuthorization, updateUser)
+    .patch(verifyUserAuthorization, updateUser)
     .delete(verifyAdmin, deleteUser);
 
 module.exports = router;

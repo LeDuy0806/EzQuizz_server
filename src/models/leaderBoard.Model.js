@@ -11,6 +11,9 @@ const leaderBoardSchema = new mongoose.Schema({
             ref: 'PlayerResult'
         }
     ],
+    pin: {
+        type: String
+    },
     questionLeaderboard: [
         {
             questionIndex: { type: Number },

@@ -2,6 +2,7 @@ const express = require('express');
 
 const {
     getQuizes,
+    importQuiz,
     getQuizesPublics,
     createQuiz,
     getQuiz,
@@ -32,13 +33,16 @@ const {
 const router = express.Router();
 
 router.use(verifyAccessToken);
-router.get('/allquizzes', getQuizesPublics);
+// router.get('/allquizzes', getQuizesPublics);
 // router.get('/public', getPublicQuizes);
+
 router.get('/public', getQuizesPublics);
 router.get('/search', getQuizesBySearch);
 router.get('/teacher/:teacherId', getTeacherQuizes);
 
 router.route('/').get(verifyAdmin, getQuizes).post(createQuiz);
+router.route('/import').post(importQuiz);
+
 router
     .route('/:id')
     .get(verifyPrivateQuiz, getQuiz)

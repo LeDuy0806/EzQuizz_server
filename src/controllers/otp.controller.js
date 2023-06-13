@@ -3,6 +3,7 @@ const asyncHandler = require('express-async-handler');
 const UserModel = require('../models/userModel');
 const { constants } = require('../constants/httpStatus');
 const User = require('../models/userModel');
+
 const generateOTP = asyncHandler(async (req, res) => {
     const mail = req.query.mail;
     const user = await User.findOne({ mail });
@@ -18,6 +19,26 @@ const generateOTP = asyncHandler(async (req, res) => {
     });
 });
 
+const generateOTPMail = asyncHandler(async (req, res) => {
+    const { mail, userName } = req.body;
+    const user = await User.findOne({ mail });
+
+    if (user) {
+        return res.status(422).json('Email have exist');
+    }
+
+    req.app.locals.OTP = await otpGenerator.generate(4, {
+        lowerCaseAlphabets: false,
+        upperCaseAlphabets: false,
+        specialChars: false
+    });
+    // res.status(201).send({ code: req.app.locals.OTP, userName: user.userName });
+    res.status(constants.CREATE).json({
+        code: req.app.locals.OTP,
+        userName
+    });
+});
+
 const verifyOTP = asyncHandler(async (req, res) => {
     const { code } = req.query;
 
@@ -25,6 +46,19 @@ const verifyOTP = asyncHandler(async (req, res) => {
         req.app.locals.OTP = null; // reset the OTP value
         req.app.locals.resetSession = true; // start session for reset password
         res.status(constants.OK).json('Verify Successsfully!');
+    } else {
+        res.status(constants.BAD_REQUEST);
+        throw new Error('Invalid OTP');
+    }
+});
+
+const verifyOTPMail = asyncHandler(async (req, res, next) => {
+    const { code } = req.body;
+    if (parseInt(req.app.locals.OTP) === parseInt(code)) {
+        req.app.locals.OTP = null; // reset the OTP value
+        req.app.locals.resetSession = true; // start session for reset password
+        // res.status(constants.OK).json('Verify Successsfully!');
+        next();
     } else {
         res.status(constants.BAD_REQUEST);
         throw new Error('Invalid OTP');
@@ -48,4 +82,10 @@ const createResetSession = asyncHandler(async (req, res) => {
     throw new Error('Session expired!');
 });
 
-module.exports = { generateOTP, verifyOTP, createResetSession };
+module.exports = {
+    generateOTP,
+    generateOTPMail,
+    verifyOTP,
+    createResetSession,
+    verifyOTPMail
+};

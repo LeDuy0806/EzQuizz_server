@@ -2,11 +2,10 @@ const mongoose = require('mongoose');
 
 const quizSchema = new mongoose.Schema(
     {
-        name: { type: String, required: true, unique: true },
+        name: { type: String },
         description: { type: String },
         backgroundImage: {
-            url: { type: String },
-            ref: { type: String }
+            type: String
         },
         creatorId: { type: mongoose.SchemaTypes.ObjectId, ref: 'users' },
         creatorName: { type: String },
@@ -20,20 +19,30 @@ const quizSchema = new mongoose.Schema(
         },
         isPublic: { type: Boolean, required: true, default: true },
         tags: [String],
+        importFrom: {
+            type: mongoose.SchemaTypes.ObjectId,
+            ref: 'users'
+        },
+        sourceCreator: { type: String },
         likesCount: { type: [String], default: [] },
         comments: { type: [String], default: [] },
         dateCreated: { type: Date, default: new Date() },
         questionList: [
             {
+                quizId: { type: mongoose.SchemaTypes.ObjectId, ref: 'quizzes' },
+                tags: [String],
                 questionType: {
                     type: String,
                     enum: ['True/False', 'Quiz'],
-                    //timeline, group, order
                     required: true
                 },
                 optionQuestion: {
                     type: String,
                     required: true
+                },
+                isPublic: {
+                    type: Boolean,
+                    default: true
                 },
                 pointType: {
                     type: String,
@@ -46,8 +55,7 @@ const quizSchema = new mongoose.Schema(
                     max: 90
                 },
                 backgroundImage: {
-                    url: { type: String },
-                    ref: { type: String }
+                    type: String
                 },
                 question: {
                     type: String
@@ -60,7 +68,10 @@ const quizSchema = new mongoose.Schema(
                         isCorrect: { type: Boolean }
                     }
                 ],
-                questionIndex: { type: Number, required: true }
+                questionIndex: { type: Number, required: true },
+                maxCorrectAnswer: { type: Number, required: true },
+                correctAnswerCount: { type: Number, required: true },
+                answerCorrect: { type: [String], required: true }
             }
         ]
     },

@@ -2,17 +2,21 @@ const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
     avatar: {
-        url: { type: String },
-        ref: { type: String }
+        type: String
     },
     userType: {
         type: String,
         enum: ['Student', 'Teacher', 'Admin'],
         required: true
     },
+    firstName: {
+        type: String
+    },
+    lastName: {
+        type: String
+    },
     fullName: {
-        type: String,
-        required: true
+        type: String
     },
     userName: {
         type: String,
@@ -32,6 +36,12 @@ const userSchema = new mongoose.Schema({
     },
     point: {
         type: Number
+    },
+    follow: {
+        type: [String]
+    },
+    friends: {
+        type: [String]
     },
     emailToken: {
         type: String

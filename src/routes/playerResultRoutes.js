@@ -11,7 +11,8 @@ const {
     getAnswers,
     getAnswer,
     updateAnswer,
-    deleteAnswer
+    deleteAnswer,
+    addPlayerResult
 } = require('../controllers/playerResult.controller');
 
 router.route('/').get(getPlayerResults).post(createPlayerResult);
@@ -22,7 +23,9 @@ router
     .patch(updatePlayerResult)
     .delete(deletePlayerResult);
 
-router.route('/:playerResultId/answers').patch(addAnswer).get(getAnswers);
+// router.route('/:playerResultId/answers').patch(addAnswer).get(getAnswers);
+
+router.route('/:playerId/results/:gameId').patch(addPlayerResult);
 
 router
     .route('/:playerResultId/answers/:answerId')

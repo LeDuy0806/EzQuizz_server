@@ -34,7 +34,6 @@ const verifyQuizOwner = asyncHandler(async (req, res, next) => {
                 const quizId = req.params.id;
                 try {
                     const quiz = await Quiz.findById(quizId);
-
                     if (!quiz) {
                         return res.status(constants.NOT_FOUND).json({
                             message: `Quiz with id ${quizId} is not found`
@@ -47,6 +46,7 @@ const verifyQuizOwner = asyncHandler(async (req, res, next) => {
                         });
                     }
                 } catch (error) {
+                    console.log(error);
                     // res.status(constants.SERVER_ERROR);
                     // throw new Error(error);
                 }

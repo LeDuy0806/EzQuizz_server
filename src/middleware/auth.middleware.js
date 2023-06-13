@@ -5,7 +5,6 @@ const User = require('../models/userModel');
 const { TokenExpiredError } = jwt;
 
 const verifyAccessToken = asyncHandler(async (req, res, next) => {
-    console.log('CC');
     let token;
     let authHeader = req.headers.Authorization || req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer')) {
@@ -39,7 +38,7 @@ const verifyAdmin = asyncHandler(async (req, res, next) => {
         token = authHeader.split(' ')[1];
         jwt.verify(token, process.env.ACCESS_TOKEN_SECERT, (err, decoded) => {
             if (err) {
-                if (error instanceof TokenExpiredError) {
+                if (err instanceof TokenExpiredError) {
                     res.status(constants.UNAUTHORIZED);
                     throw new Error('Token expired');
                 }
@@ -66,12 +65,13 @@ const verifyAdmin = asyncHandler(async (req, res, next) => {
 
 const verifyUserAuthorization = asyncHandler(async (req, res, next) => {
     let token;
+    console.log('CC');
     let authHeader = req.headers.Authorization || req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer')) {
         token = authHeader.split(' ')[1];
         jwt.verify(token, process.env.ACCESS_TOKEN_SECERT, (err, decoded) => {
             if (err) {
-                if (error instanceof TokenExpiredError) {
+                if (err instanceof TokenExpiredError) {
                     res.status(constants.UNAUTHORIZED);
                     throw new Error('Token expired');
                 }
@@ -99,6 +99,7 @@ const verifyUserAuthorization = asyncHandler(async (req, res, next) => {
 
 const verifyUser = asyncHandler(async (req, res, next) => {
     const { mail } = req.method === 'GET' ? req.query : req.body;
+    console.log(mail);
     if (!mail) {
         res.status(constants.BAD_REQUEST);
         throw new Error('email Empty');

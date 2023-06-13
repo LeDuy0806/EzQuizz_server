@@ -5,7 +5,8 @@ const {
     loginUser,
     requestRefreshToken,
     userLogout,
-    resetPassword
+    resetPassword,
+    changeEmail
 } = require('../controllers/auth.controller');
 
 const {
@@ -14,7 +15,12 @@ const {
     verifyUser
 } = require('../middleware/auth.middleware');
 
-const { generateOTP, verifyOTP } = require('../controllers/otp.controller');
+const {
+    generateOTP,
+    generateOTPMail,
+    verifyOTP,
+    verifyOTPMail
+} = require('../controllers/otp.controller');
 const {
     VerifyEmail,
     registerMail
@@ -37,6 +43,10 @@ router.get('/verify-email', VerifyEmail);
 
 router.get('/generateOTP', verifyUser, localVariables, generateOTP); // generate random OTP
 router.get('/verifyOTP', verifyUser, verifyOTP); // verify generated OTP
+
+router.put('/changeEmail', localVariables, generateOTPMail); // generate random OTP
+
 router.put('/resetPassword', verifyUser, resetPassword); // use to reset password
+router.put('/resetEmail', verifyOTPMail, changeEmail); // use to reset password
 
 module.exports = router;

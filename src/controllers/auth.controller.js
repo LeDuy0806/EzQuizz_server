@@ -140,12 +140,14 @@ const registerUser = asyncHandler(async (req, res) => {
     const existingEmail = await User.findOne({ mail });
 
     if (existingEmail) {
-        res.status(constants.UNPROCESSABLE_ENTITY);
-        throw new Error('Email already exists');
+        // res.status(constants.UNPROCESSABLE_ENTITY);
+        // throw new Error('Email already exists');
+        res.status(422).json('Email already exists');
     }
     if (existingUserName) {
-        res.status(constants.UNPROCESSABLE_ENTITY);
-        throw new Error('UserName already exists');
+        // res.status(constants.UNPROCESSABLE_ENTITY);
+        // throw new Error('UserName already exists');
+        res.status(422).json('UserName already exists');
     }
     //Hash password
     const hashedPassword = await bcrypt.hash(password + '', 10);
@@ -158,7 +160,9 @@ const registerUser = asyncHandler(async (req, res) => {
             mail,
             emailToken: crypto.randomBytes(64).toString('hex'),
             isVerified: false,
-            password: hashedPassword
+            password: hashedPassword,
+            point: 0,
+            follow: []
         });
         // console.log(`User created ${user}`);
         if (user) {
@@ -334,11 +338,11 @@ const resetPassword = asyncHandler(async (req, res) => {
         if (user) {
             const hasedNewpass = await bcrypt.hash(password, 10);
             if (hasedNewpass) {
-                await User.findOneAndUpdate(
+                const newUser = await User.findOneAndUpdate(
                     { mail: user.mail },
                     { password: hasedNewpass }
                 );
-                res.status(constants.OK).json('Change Password successfully!');
+                res.status(constants.OK).json(newUserx);
             } else {
                 res.status(constants.SERVER_ERROR);
                 throw new Error('Enable to hashed password');
@@ -350,11 +354,26 @@ const resetPassword = asyncHandler(async (req, res) => {
     }
 });
 
+const changeEmail = asyncHandler(async (req, res) => {
+    console.log(req.body);
+    const { emailPrev, newEmail } = req.body;
+    const user = await User.findOne({ mail: emailPrev });
+
+    try {
+        user.mail = newEmail;
+        await user.save();
+        return res.status(200).json(user);
+    } catch (error) {
+        console.log(error);
+    }
+});
+
 module.exports = {
     registerUser,
     loginUser,
     currentUser,
     requestRefreshToken,
     userLogout,
-    resetPassword
+    resetPassword,
+    changeEmail
 };

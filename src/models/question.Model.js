@@ -29,8 +29,7 @@ const questionSchema = new mongoose.Schema(
             max: 90
         },
         backgroundImage: {
-            url: { type: String },
-            ref: { type: String }
+            type: String
         },
         question: {
             type: String
@@ -43,7 +42,10 @@ const questionSchema = new mongoose.Schema(
                 isCorrect: { type: Boolean }
             }
         ],
-        questionIndex: { type: Number, required: true }
+        questionIndex: { type: Number, required: true },
+        maxCorrectAnswer: { type: Number, required: true },
+        correctAnswerCount: { type: Number, required: true },
+        answerCorrect: { type: [String], required: true }
     },
     {
         timestamps: true

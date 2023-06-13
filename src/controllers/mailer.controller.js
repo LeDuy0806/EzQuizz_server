@@ -45,12 +45,14 @@ const registerMail = asyncHandler(async (req, res) => {
 
     transporter.sendMail(message, function (error, info) {
         if (error) {
+            console.log(error);
             res.status(constants.NOT_FOUND);
             throw new Error('Send email failure');
         } else {
             res.status(constants.OK).json(
                 'Verfication email is sent to your gmail account'
             );
+            next();
         }
     });
 });
