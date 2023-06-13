@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const PlayerResult = require('../models/playerResult.Model');
 const Quiz = require('../models/quiz.Model');
 const Game = require('../models/game.Model');
-
+const User = require('../models/userModel');
 const createPlayerResult = async (req, res) => {
     const { playerId, gameId, score, answers } = req.body;
     const playerResult = new PlayerResult({
@@ -95,8 +95,6 @@ const addAnswer = async (req, res) => {
         answers,
         time
     } = req.body.newAnswer;
-
-    console.log(answers);
 
     let playerResult;
     let game;
@@ -260,6 +258,28 @@ const updateAnswer = async (req, res) => {
     }
 };
 
+const addPlayerResult = async (req, res) => {
+    const { playerId, gameId } = req.params;
+    const { score, answers } = req.body;
+    const newPlayerResult = new PlayerResult({
+        playerId,
+        gameId,
+        score,
+        answers
+    });
+
+    const user = await User.findById(playerId);
+    user.point += score;
+    user.save();
+
+    try {
+        await newPlayerResult.save();
+        res.status(200).json({ newPlayerResult, user });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createPlayerResult,
     getPlayerResults,
@@ -270,5 +290,6 @@ module.exports = {
     getAnswers,
     getAnswer,
     deleteAnswer,
-    updateAnswer
+    updateAnswer,
+    addPlayerResult
 };
