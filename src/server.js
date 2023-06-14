@@ -37,7 +37,7 @@ const { instrument } = require('@socket.io/admin-ui');
 const io = require('socket.io')(3001, {
     cors: {
         origin: [
-            'http://192.168.146.18:4000',
+            `http://localhost:${port}`,
             'https://admin.socket.io/#/sockets'
         ]
     }
