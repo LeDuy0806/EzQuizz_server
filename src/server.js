@@ -121,7 +121,7 @@ io.on('connection', (socket) => {
                     playerList,
                     pointsPerQuestion
                 );
-        } 
+        }
     );
 
     socket.on('countdown-preview', (gamePin, cb) => {
