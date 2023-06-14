@@ -342,7 +342,7 @@ const resetPassword = asyncHandler(async (req, res) => {
                     { mail: user.mail },
                     { password: hasedNewpass }
                 );
-                res.status(constants.OK).json(newUserx);
+                res.status(constants.OK).json(newUser);
             } else {
                 res.status(constants.SERVER_ERROR);
                 throw new Error('Enable to hashed password');
