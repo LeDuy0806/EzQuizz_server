@@ -156,6 +156,8 @@ const registerUser = asyncHandler(async (req, res) => {
             avatar: '',
             userName,
             userType,
+            firstName,
+            lastName,
             fullName,
             mail,
             emailToken: crypto.randomBytes(64).toString('hex'),

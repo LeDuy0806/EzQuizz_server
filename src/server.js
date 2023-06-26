@@ -24,6 +24,8 @@ app.use('/api/quizzes', require('./routes/quizRoutes'));
 app.use('/api/games', require('./routes/gameRoutes'));
 app.use('/api/playerResults', require('./routes/playerResultRoutes'));
 app.use('/api/leaderboard', require('./routes/leaderboardRoutes'));
+app.use('/api/community', require('./routes/communityRoutes'));
+
 app.use(errorHandler);
 
 app.listen(port, () => {
@@ -37,7 +39,7 @@ const { instrument } = require('@socket.io/admin-ui');
 const io = require('socket.io')(3001, {
     cors: {
         origin: [
-            `http://localhost:${port}`,
+            'http://192.168.91.18:4000',
             'https://admin.socket.io/#/sockets'
         ]
     }
@@ -139,7 +141,7 @@ io.on('connection', (socket) => {
 
     socket.on('send-answer-to-host', (data, score, pinGame, leaderboardId) => {
         let player = getPlayer(socket.id);
-        console.log(data, player.userName, score, pinGame, leaderboardId);
+        // console.log(data, player.userName, score, pinGame, leaderboardId);
         socket
             .to(pinGame)
             .emit('get-answer-from-player', data, leaderboardId, score, player);
