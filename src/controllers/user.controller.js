@@ -145,6 +145,7 @@ const updateUser = asyncHandler(async (req, res) => {
         userName,
         mail: mail
     });
+
     try {
         const updatedUser = await User.findByIdAndUpdate(id, user, {
             new: true
