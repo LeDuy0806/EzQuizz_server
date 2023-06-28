@@ -24,6 +24,9 @@ const communitySchema = new mongoose.Schema({
     },
     creatorName: {
         type: String
+    },
+    chatBox: {
+        type: [Object]
     }
 });
 

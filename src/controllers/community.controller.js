@@ -27,6 +27,19 @@ const getCommunities = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+const getCommunity = async (req, res) => {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(404).send(`No community with id: ${id}`);
+    }
+
+    try {
+        const community = await Community.findById(id);
+        res.status(200).json(community);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 
 const createCommunity = async (req, res) => {
     const { name, backgroundImage, creatorId, creatorName, tags } = req.body;
@@ -152,11 +165,35 @@ const deleteQuizCommunity = async (req, res) => {
     }
 };
 
+const addMessageChatBox = async (req, res) => {
+    const { id } = req.params;
+    const { message } = req.body;
+
+    const community = await Community.findById(id);
+    // const quiz = await Quiz.findById(quizId);
+    // console.log(quiz._id);
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(404).send(`No community with id: ${id}`);
+    }
+
+    try {
+        community.chatBox.push(message);
+        await community.save();
+        res.status(200).json('Successfully');
+        // res.status(200).json(communities);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getCommunities,
     createCommunity,
     updateCommunity,
     deletedCommunity,
     addQuizCommunity,
-    deleteQuizCommunity
+    deleteQuizCommunity,
+    addMessageChatBox,
+    getCommunity
 };

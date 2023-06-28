@@ -178,6 +178,22 @@ io.on('connection', (socket) => {
         socket.to(pin).emit('host-leave', pin);
         socket.leave(pin);
     });
+
+    socket.on('joinChat', (communityId) => {
+        console.log('User id ' + socket.id + ' join ChatRoom: ' + communityId);
+        socket.join(parseInt(communityId));
+    });
+
+    socket.on('send-message', (infoText, communityId, cb) => {
+        cb();
+        socket.to(parseInt(communityId)).emit('receive-message', infoText);
+        // socket.broadcast.emit('receive-message', message);
+    });
+
+    socket.on('outChat', (communityId) => {
+        console.log('User id ' + socket.id + ' out ChatRoom: ' + communityId);
+        socket.leave(parseInt(communityId));
+    });
 });
 
 instrument(io, { auth: false });
