@@ -26,7 +26,7 @@ app.use('/api/playerResults', require('./routes/playerResultRoutes'));
 app.use('/api/leaderboard', require('./routes/leaderboardRoutes'));
 app.use('/api/community', require('./routes/communityRoutes'));
 
-app.use(errorHandler);
+app.use(errorHandler);  
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);

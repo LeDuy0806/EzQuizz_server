@@ -11,6 +11,10 @@ const leaderBoardSchema = new mongoose.Schema({
             ref: 'PlayerResult'
         }
     ],
+    quizId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Quiz'
+    },
     pin: {
         type: String
     },

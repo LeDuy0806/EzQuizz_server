@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const {
+    getHistory,
     createLeaderboard,
     deleteLeaderboard,
     getLeaderboard,
@@ -10,6 +11,7 @@ const {
     updateCurrentLeaderboard
 } = require('../controllers/leaderboard.controller');
 
+router.route('/:id').get(getHistory);
 router.route('/').post(createLeaderboard);
 
 router.route('/:leaderboardId/playerresult').patch(addPlayerResult);
