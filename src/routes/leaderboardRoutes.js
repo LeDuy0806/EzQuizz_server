@@ -11,7 +11,7 @@ const {
     updateCurrentLeaderboard
 } = require('../controllers/leaderboard.controller');
 
-router.route('/:id').get(getHistory);
+router.route('/history/:id').get(getHistory);
 router.route('/').post(createLeaderboard);
 
 router.route('/:leaderboardId/playerresult').patch(addPlayerResult);

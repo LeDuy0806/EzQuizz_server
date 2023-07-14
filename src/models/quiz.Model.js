@@ -46,7 +46,7 @@ const quizSchema = new mongoose.Schema(
                 },
                 pointType: {
                     type: String,
-                    enum: ['Standard', 'Double', 'BasedOnTime'],
+                    enum: ['Standard', 'Double', 'OnTime'],
                     required: true
                 },
                 answerTime: {

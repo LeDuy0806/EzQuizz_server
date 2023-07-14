@@ -237,6 +237,7 @@ const registerUser = asyncHandler(async (req, res) => {
             throw new Error('User data is not valid');
         }
     } catch (error) {
+        console.log(error);
         res.status(constants.BAD_REQUEST);
         throw new Error(error);
     }
