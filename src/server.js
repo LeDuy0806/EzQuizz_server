@@ -26,7 +26,7 @@ app.use('/api/playerResults', require('./routes/playerResultRoutes'));
 app.use('/api/leaderboard', require('./routes/leaderboardRoutes'));
 app.use('/api/community', require('./routes/communityRoutes'));
 
-app.use(errorHandler);  
+app.use(errorHandler);
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
@@ -38,10 +38,7 @@ const { instrument } = require('@socket.io/admin-ui');
 
 const io = require('socket.io')(3001, {
     cors: {
-        origin: [
-            'http://192.168.91.18:4000',
-            'https://admin.socket.io/#/sockets'
-        ]
+        origin: ['http://172.20.10.3:4000', 'https://admin.socket.io/#/sockets']
     }
 });
 
